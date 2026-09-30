@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
                 } 
                 else if (op == "meld") {
                     binomial_heap h1, h2;
-                    for (size_t i = 0; i < n / 2; ++i) h1.insert(dataset[i]);
+                    for (size_t i = 0; i < static_cast<size_t>(n / 2); ++i) h1.insert(dataset[i]);
                     for (size_t i = n / 2; i < dataset.size(); ++i) h2.insert(dataset[i]);
 
                     auto begin = std::chrono::high_resolution_clock::now();

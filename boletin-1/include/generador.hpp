@@ -5,12 +5,16 @@
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
+#include <vector>
+#include <numeric>  
+#include <random>   
+#include <algorithm> 
 
-// Genera los primeros 'count' números primos usando Criba con límite dinámico
+// Genera los primeros 'count' números primos usando Criba de Eratostenes con límite dinámico
 inline std::vector<int> generatePrimes(size_t count) {
     if (count == 0) return {};
 
-    // Estimación dinámica del límite superior mediante n * ln(n) + n * ln(ln(n))
+    // Estimación dinámica del límite superior: n * ln(n) + n * ln(ln(n))
     size_t limit;
     if (count < 6) {
         limit = 15;
@@ -45,7 +49,7 @@ inline std::vector<int> generatePrimes(size_t count) {
 inline std::vector<int> generateComposites(size_t count) {
     if (count == 0) return {};
 
-    // Estimación dinámica del límite para compuestos
+    // Estimación dinámica del límite superior
     size_t limit = count * 2 + 100;
     std::vector<bool> is_prime(limit, true);
     is_prime[0] = is_prime[1] = false;
@@ -69,7 +73,7 @@ inline std::vector<int> generateComposites(size_t count) {
     return composites;
 }
 
-// Función para generar un dataset de claves aleatorias desordenadas
+// Función para generar un vector de enteros aleatorios desordenadas
 std::vector<int> generateRandomDataset(size_t n, unsigned int seed = 42) {
     std::vector<int> data(n);
     std::iota(data.begin(), data.end(), 1); // Llena con 1, 2, ..., n
@@ -85,10 +89,9 @@ size_t get_powerlaw_index(size_t n, double alpha, std::mt19937& gen) {
     double u = dis(gen);
     
     // Transformación aproximada para distribución Power-Law / Zipf
-    // alpha > 1 define el nivel de sesgo (ej. 1.5 es un sesgo fuerte)
-    double p = std::pow(u, 1.0 / (1.0 - alpha));
+    double p = std::pow(u, 1.0 / (1.0 - alpha)); // alpha define el nivel de sesgo
     size_t idx = static_cast<size_t>(p * n);
     return std::min(idx, n - 1);
 }
 
-#endif // GENERADOR_HPP
+#endif
