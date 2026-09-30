@@ -9,6 +9,7 @@
 
 #include "../include/searches.hpp"
 #include "../include/uhr_utils.hpp"
+//#include "../include/generador.hpp"
 
 // Tipo de puntero a función para evitar comparaciones de string dentro del reloj
 using SearchFn = int(*)(const std::vector<int>&, int);
@@ -62,16 +63,20 @@ std::vector<int> generar_dataset_uniforme(size_t n) {
     return dataset;
 }
 
-// Genera una sola clave aleatoria (80% presente / 20% ausente)
-int generar_clave_aleatoria(const std::vector<int>& dataset, std::mt19937& gen) {
+// Genera K claves aleatorias (80% presentes / 20% ausentes)
+std::vector<int> generar_claves_aleatorias(const std::vector<int>& dataset, size_t k, std::mt19937& gen) {
+    std::vector<int> targets(k);
     std::uniform_int_distribution<size_t> dist_idx(0, dataset.size() - 1);
     std::bernoulli_distribution dist_presente(0.8);
 
-    if (dist_presente(gen)) {
-        return dataset[dist_idx(gen)];
-    } else {
-        return dataset[dist_idx(gen)] + 1; // Clave ausente (impar)
+    for (size_t i = 0; i < k; ++i) {
+        if (dist_presente(gen)) {
+            targets[i] = dataset[dist_idx(gen)];
+        } else {
+            targets[i] = dataset[dist_idx(gen)] + 1; // Clave ausente (impar)
+        }
     }
+    return targets;
 }
 
 int main(int argc, char *argv[]) {
@@ -97,47 +102,50 @@ int main(int argc, char *argv[]) {
     std::int64_t executed_runs = 0;
 
     std::mt19937 gen(42); 
+    const size_t K_SEARCHES = 1000; 
 
-    // Acumulador global para evitar que el compilador optimice llamadas no utilizadas
+    // Acumulador global para engañar al optimizador del compilador
     long long global_checksum = 0;
 
-    std::cout << "\033[0;36mEjecutando Experimento 1 (Medición Unitaria) [" << algo << "]...\033[0m" << std::endl;
+    std::cout << "\033[0;36mEjecutando Experimento 1 [" << algo << "]...\033[0m" << std::endl;
 
     for (std::int64_t n = lower; n <= upper; n *= step) {
         std::vector<int> dataset = generar_dataset_uniforme(static_cast<size_t>(n));
         if (dataset.empty()) continue;
 
-        // A. WARM-UP (Llamadas previas fuera del reloj para calentar caché/instrucciones)
-        for (int w = 0; w < 10; ++w) {
-            int t = generar_clave_aleatoria(dataset, gen);
-            global_checksum += search_func(dataset, t);
+        // A. WARM-UP
+        {
+            std::vector<int> warmup_targets = generar_claves_aleatorias(dataset, 10, gen);
+            for (int t : warmup_targets) {
+                global_checksum += search_func(dataset, t);
+            }
         }
 
-        // B. MEDICIÓN UNITARIA
+        // B. MEDICIÓN
         mean_time = 0;
         for (std::int64_t i = 0; i < runs; i++) {
             display_progress(++executed_runs, total_runs);
 
-            // Generación del objetivo fuera de la ventana de medición de tiempo
-            int target = generar_clave_aleatoria(dataset, gen);
+            std::vector<int> targets = generar_claves_aleatorias(dataset, K_SEARCHES, gen);
 
             auto begin_time = std::chrono::high_resolution_clock::now();
             
-            // Medición directa y unitaria de la función de búsqueda
-            int res = search_func(dataset, target);
+            long long run_checksum = 0;
+            for (size_t k = 0; k < K_SEARCHES; ++k) {
+                run_checksum += search_func(dataset, targets[k]);
+            }
             
             auto end_time = std::chrono::high_resolution_clock::now();
 
-            global_checksum += res;
+            global_checksum += run_checksum;
 
             std::chrono::duration<double, std::nano> elapsed_time = end_time - begin_time;
             
-            // Guarda el tiempo unitario exacto en nanosegundos
-            times[i] = elapsed_time.count();
+            times[i] = elapsed_time.count() / static_cast<double>(K_SEARCHES);
             mean_time += times[i];
         }
 
-        // C. PROCESAMIENTO ESTADÍSTICO
+        // C. ESTADÍSTICAS
         mean_time /= runs;
         time_stdev = 0;
         for (std::int64_t i = 0; i < runs; i++) {
@@ -155,7 +163,7 @@ int main(int argc, char *argv[]) {
     std::cout << "\n\033[1;32mExperimento 1 Completado con éxito!\033[0m" << std::endl;
     time_data.close();
 
-    // Uso del checksum para garantizar que las ejecuciones no sean eliminadas por dead code elimination
+    // Uso dummy del checksum para evitar que el compilador optimice
     if (global_checksum == -99999999) {
         std::cout << global_checksum << std::endl;
     }

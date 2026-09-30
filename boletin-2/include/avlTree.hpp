@@ -187,7 +187,7 @@ private:
                 root->key = temp->key;
 
                 // Eliminar recursivamente el sucesor In-Order
-                root->right = deleteNode(root->right, temp->key);
+                root->right = deleteNode(root->right, temp->key, deleted);
             }
         }
 
