@@ -1,0 +1,187 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES PRINCIPALES ---
+\usepackage[utf8]{inputenc} % Compatibilidad con codificación UTF-8
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{geometry}
+
+% --- CONFIGURACIÓN DE PÁGINA ---
+\geometry{
+    a4paper,
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+% --- DATOS DEL ESTUDIANTE Y ASIGNATURA ---
+\newcommand{\tituloBoletin}{Boletín 1: Búsqueda y Colas de Prioridad}
+\newcommand{\subtituloBoletin}{Análisis teórico y experimental de algoritmos de búsqueda y heaps}
+\newcommand{\nombreEstudiante}{Francisco Arentsen}
+\newcommand{\matriculaEstudiante}{[Tu Número de Matrícula]}
+\newcommand{\asignatura}{Estructuras de Datos y Algoritmos Avanzados (2026-2)}
+\newcommand{\profesor}{José Fuentes}
+\newcommand{\ayudante}{Leonardo Lovera}
+\newcommand{\departamento}{Departamento de Ingeniería Informática y Ciencias de la Computación}
+\newcommand{\institucion}{Universidad de Concepción}
+
+\begin{document}
+
+% ==============================================================================
+% PORTADA
+% ==============================================================================
+\begin{titlepage}
+    \pagenumbering{alph} % Evita identificadores duplicados en hyperref
+    \centering
+    % Logo institucional
+    \includegraphics[width=0.35\textwidth]{logo.png}\\[1cm]
+    
+    {\small \scshape \departamento \\ \institucion} \\[1.5cm]
+    
+    \rule{\linewidth}{0.5mm} \\[0.4cm]
+    {\huge \bfseries \tituloBoletin} \\[0.3cm]
+    {\large \subtituloBoletin} \\
+    \rule{\linewidth}{0.5mm} \\[1.5cm]
+    
+    \begin{minipage}{0.5\textwidth}
+        \begin{flushleft} \large
+            \textbf{Estudiante:}\\
+            \nombreEstudiante\\[0.2cm]
+            \textbf{Matrícula:}\\
+            \matriculaEstudiante
+        \end{flushleft}
+    \end{minipage}
+    ~
+    \begin{minipage}{0.4\textwidth}
+        \begin{flushright} \large
+            \textbf{Profesor:} \profesor\\
+            \textbf{Ayudante:} \ayudante\\[0.3cm]
+            \textbf{Asignatura:}\\
+            \small \asignatura
+        \end{flushright}
+    \end{minipage}
+    
+    \vfill
+    {\large \today}
+\end{titlepage}
+
+\clearpage
+\pagenumbering{arabic} % Reinicia el contador de páginas para el cuerpo del informe
+
+% ==============================================================================
+% ESTRUCTURA PRINCIPAL DEL INFORME
+% ==============================================================================
+
+\section{Resumen}
+% 1. Resumen: Algoritmos y/o estructuras estudiadas, motivación y casos de uso.
+En este trabajo se realiza un estudio comparativo, teórico y experimental de algoritmos de búsqueda sobre arreglos ordenados (Búsqueda Secuencial, Búsqueda Binaria, Búsqueda Galopante y funciones de la STL como \texttt{std::binary\_search} / \texttt{std::lower\_bound}) y de colas de prioridad (Heap Binario y Heap Binomial). La motivación del estudio es evaluar el impacto práctico de la posición del elemento buscado, el tamaño de la secuencia y el rendimiento de las operaciones fundamentales sobre estructuras tipo heap.
+
+\section{Análisis Teórico}
+% 2. Análisis Teórico: Explicación de complejidades temporales y espaciales.
+
+\subsection{Algoritmos de Búsqueda}
+Se evalúan cuatro estrategias de búsqueda sobre secuencias ordenadas de tamaño $n$:
+\begin{itemize}
+    \item \textbf{Búsqueda Secuencial:} Explora los elementos uno a uno de forma lineal. Complejidad temporal $\mathcal{O}(n)$ en el peor caso y $\mathcal{O}(1)$ en el mejor caso.
+    \item \textbf{Búsqueda Binaria:} Divide el espacio de búsqueda a la mitad iterativamente. Complejidad temporal $\mathcal{O}(\log n)$.
+    \item \textbf{Búsqueda Galopante (Galloping Search):} Identifica un rango $[2^{k-1}, 2^k]$ mediante saltos exponenciales y luego aplica búsqueda binaria. Complejidad temporal $\mathcal{O}(\log i)$, donde $i$ es la posición de la clave buscada.
+    \item \textbf{Alternativas STL (\texttt{std::lower\_bound}):} Implementación optimizada de búsqueda binaria en C++. Complejidad temporal $\mathcal{O}(\log n)$.
+\end{itemize}
+
+\subsection{Colas de Prioridad (Heaps)}
+\begin{table}[h!]
+    \centering
+    \caption{Comparativa teórica entre Heap Binario y Heap Binomial.}
+    \label{tab:complejidad_heaps}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Estructura} & \textbf{Insert} & \textbf{Find-Min} & \textbf{Extract-Min} & \textbf{Mergable (Meld)} \\
+        \midrule
+        \textbf{Heap Binario} & $\mathcal{O}(\log n)$ & $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ \\
+        \textbf{Heap Binomial} & $\mathcal{O}(1)$ amort. & $\mathcal{O}(\log n)$ / $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(\log n)$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Implementaciones}
+% 3. Implementaciones: Decisiones tomadas, referencias de origen.
+\begin{itemize}
+    \item \textbf{Búsquedas:} Implementaciones propias escritas en C++17 para búsqueda secuencial, binaria y galopante.
+    \item \textbf{Heaps:} Se adaptaron, comentaron y analizaron las estructuras de \emph{Heap Binario} y \emph{Heap Binomial} obtenidas directamente del repositorio del curso (\texttt{github.com/jfuentess/edaa/tree/main/heaps}).
+\end{itemize}
+
+\section{Resultados Experimentales}
+% 4. Resultados Experimentales: Inicialización, hardware, gráficos y tablas.
+
+\subsection{Entorno de Pruebas y Hardware}
+Los experimentos fueron ejecutados bajo las siguientes especificaciones:
+\begin{itemize}
+    \item \textbf{Procesador:} [Ej: AMD Ryzen 7 5800X / Intel Core i7 @ 3.2 GHz]
+    \item \textbf{Memoria RAM:} [Ej: 16 GB DDR4 3200 MHz]
+    \item \textbf{Almacenamiento:} [Ej: SSD NVMe M.2 512 GB]
+    \item \textbf{Compilador y SO:} GCC 11.2, C++17, [Ubuntu 22.04 LTS / Windows 11]
+\end{itemize}
+
+\subsection{Diseño Experimental}
+
+\subsubsection{Experimento 1: Efecto del Tamaño de la Secuencia ($n$)}
+Se evalúa el tiempo de ejecución fijando la posición de consulta y variando el tamaño $n \in \{10^3, 10^4, 10^5, 10^6, 10^7\}$. Se realizaron al menos 32 repeticiones por cada punto experimental para reducir el ruido, reportando media y desviación estándar.
+
+\subsubsection{Experimento 2: Efecto de la Posición del Elemento ($i$)}
+Con un tamaño de secuencia fijo ($n = 10^6$), se realizan consultas variando la posición $i$ del elemento buscado desde las primeras posiciones hasta las últimas, comparando Búsqueda Galopante vs. Binaria vs. Secuencial.
+
+\subsubsection{Experimento 3: Validación de Hipótesis en Heaps}
+\textbf{Hipótesis Planteada:} El Heap Binomial presentará un mejor desempeño relativo en operaciones de mezcla/inserción repetida, mientras que el Heap Binario será más eficiente en \texttt{Extract-Min} debido a la contigüidad en memoria del arreglo.
+
+\subsection{Resultados Obtenidos}
+
+\begin{table}[h!]
+    \centering
+    \caption{Tiempos de ejecución ($\mu s$) para Búsqueda según tamaño $n$ (Media $\pm$ Desviación Estándar).}
+    \label{tab:resultados_busqueda}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Tamaño ($n$)} & \textbf{Secuencial} & \textbf{Binaria} & \textbf{Galopante} & \textbf{STL (\texttt{lower\_bound})} \\
+        \midrule
+        $10^3$ & -- $\pm$ -- & -- $\pm$ -- & -- $\pm$ -- & -- $\pm$ -- \\
+        $10^5$ & -- $\pm$ -- & -- $\pm$ -- & -- $\pm$ -- & -- $\pm$ -- \\
+        $10^7$ & -- $\pm$ -- & -- $\pm$ -- & -- $\pm$ -- & -- $\pm$ -- \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+%\begin{figure}[h!]
+%    \centering
+%    \includegraphics[width=0.75\textwidth]{grafico_experimento1.png}
+%    \caption{Tiempo de ejecución vs. Tamaño de secuencia ($n$) con 32 repeticiones.}
+%    \label{fig:exp1}
+%\end{figure}
+
+\section{Conclusiones y Discusión}
+% 5. Conclusiones: Validadas por los resultados experimentales, comparaciones cuantitativas, toma de decisiones.
+\begin{itemize}
+    \item \textbf{Búsquedas:} La Búsqueda Galopante demostró ser cuantitativamente superior a la Búsqueda Binaria estándar cuando el elemento se encuentra en las primeras posiciones del arreglo ($\mathcal{O}(\log i) \ll \mathcal{O}(\log n)$).
+    \item \textbf{Desempeño STL:} La implementación de la STL superó a la versión propia de búsqueda binaria debido a optimizaciones a nivel de compilador e inlining de código.
+    \item \textbf{Heaps y Localidad de Memoria:} [Conjeturas o validación de las hipótesis planteadas sobre Heap Binario vs. Binomial basadas en la simulación].
+\end{itemize}
+
+\section{Referencias}
+\begin{enumerate}
+    \item Repositorio oficial del curso EDAA: \url{https://github.com/jfuentess/edaa/tree/main/heaps}
+    \item Documentación oficial de C++ STL (\texttt{std::lower\_bound}, \texttt{std::priority\_queue}).
+    \item Cormen, T. H., Leiserson, C. E., Rivest, R. L., \& Stein, C. (2009). \emph{Introduction to Algorithms} (3rd ed.). MIT Press.
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,187 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES PRINCIPALES ---
+\usepackage[utf8]{inputenc} % Codificación de entrada estándar (compatible con versiones previas)
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{geometry}
+
+% --- CONFIGURACIÓN DE PÁGINA ---
+\geometry{
+    a4paper,
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+% --- DATOS DEL ESTUDIANTE Y ASIGNATURA ---
+\newcommand{\tituloBoletin}{Boletín 2: Árboles de Búsqueda}
+\newcommand{\subtituloBoletin}{Evaluación teórica y experimental de Árboles AVL, Rojo-Negro y Splay}
+\newcommand{\nombreEstudiante}{Francisco Arentsen}
+\newcommand{\matriculaEstudiante}{[Tu Número de Matrícula]}
+\newcommand{\asignatura}{Estructuras de Datos y Algoritmos Avanzados (2026-2)}
+\newcommand{\profesor}{José Fuentes}
+\newcommand{\ayudante}{Leonardo Lovera}
+\newcommand{\departamento}{Departamento de Ingeniería Informática y Ciencias de la Computación}
+\newcommand{\institucion}{Universidad de Concepción}
+
+\begin{document}
+
+% ==============================================================================
+% PORTADA
+% ==============================================================================
+\begin{titlepage}
+    \pagenumbering{alph} % Evita conflicto de identificadores duplicados con hyperref
+    \centering
+    % Logo institucional
+    \includegraphics[width=0.35\textwidth]{logo.png}\\[1cm]
+    
+    {\small \scshape \departamento \\ \institucion} \\[1.5cm]
+    
+    \rule{\linewidth}{0.5mm} \\[0.4cm]
+    {\huge \bfseries \tituloBoletin} \\[0.3cm]
+    {\large \subtituloBoletin} \\
+    \rule{\linewidth}{0.5mm} \\[1.5cm]
+    
+    \begin{minipage}{0.5\textwidth}
+        \begin{flushleft} \large
+            \textbf{Estudiante:}\\
+            \nombreEstudiante\\[0.2cm]
+            \textbf{Matrícula:}\\
+            \matriculaEstudiante
+        \end{flushleft}
+    \end{minipage}
+    ~
+    \begin{minipage}{0.4\textwidth}
+        \begin{flushright} \large
+            \textbf{Profesor:} \profesor\\
+            \textbf{Ayudante:} \ayudante\\[0.3cm]
+            \textbf{Asignatura:}\\
+            \small \asignatura
+        \end{flushright}
+    \end{minipage}
+    
+    \vfill
+    {\large \today}
+\end{titlepage}
+
+\clearpage
+\pagenumbering{arabic} % Reinicia el contador de páginas para el cuerpo del informe
+
+% ==============================================================================
+% ESTRUCTURA PRINCIPAL DEL INFORME
+% ==============================================================================
+
+\section{Resumen}
+% 1. Resumen: Algoritmos y/o estructuras estudiadas, motivación y casos de uso.
+En el presente boletín se realiza un estudio comparativo teórico y experimental de tres estructuras de datos de árboles de búsqueda binaria auto-balanceados: Árbol AVL, Árbol Rojo-Negro y Árbol Splay. La motivación principal es analizar sus desempeños en escenarios reales bajo patrones de acceso uniformes y no uniformes, permitiendo identificar la pertinencia de uso de cada estructura según los requisitos de frecuencia de acceso y restricciones de tiempo.
+
+\section{Análisis Teórico}
+% 2. Análisis Teórico: Explicación de complejidades temporales y espaciales.
+Las estructuras analizadas ofrecen garantías teóricas sobre la complejidad temporal de las operaciones principales (\texttt{search}, \texttt{insert}, \texttt{delete}):
+
+\begin{table}[h!]
+    \centering
+    \caption{Comparativa de complejidad temporal y espacial.}
+    \label{tab:complejidad_teorica}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Estructura} & \textbf{Búsqueda} & \textbf{Inserción} & \textbf{Eliminación} & \textbf{Espacio} \\
+        \midrule
+        \textbf{Árbol AVL} & $\mathcal{O}(\log n)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ \\
+        \textbf{Rojo-Negro (\texttt{std::set})} & $\mathcal{O}(\log n)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ \\
+        \textbf{Árbol Splay} & $\mathcal{O}(\log n)$ amort. & $\mathcal{O}(\log n)$ amort. & $\mathcal{O}(\log n)$ amort. & $\mathcal{O}(n)$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\noindent
+\textbf{Detalles del comportamiento teórico:}
+\begin{itemize}
+    \item \textbf{Árbol AVL:} Mantiene un balance estricto mediante la diferencia de alturas (factor de balance $\in \{-1,0,1\}$), favoreciendo búsquedas más rápidas en promedio.
+    \item \textbf{Árbol Rojo-Negro:} Mantiene el balance mediante coloreado de nodos. Requiere menos rotaciones durante modificaciones, siendo altamente eficiente en inserciones/eliminaciones masivas.
+    \item \textbf{Árbol Splay:} Reorganiza dinámicamente los nodos accedidos moviéndolos a la raíz mediante la operación \emph{splay}. Destaca por su propiedad de localidad de referencia.
+\end{itemize}
+
+\section{Implementaciones}
+% 3. Implementaciones: Decisiones tomadas, referencias de origen.
+\begin{itemize}
+    \item \textbf{Árbol Rojo-Negro:} Implementado utilizando el contenedor genérico \texttt{std::set} de la librería estándar de C++ (STL).
+    \item \textbf{Árbol AVL y Splay:} Basados en implementaciones adaptadas a clases C++ genéricas (\texttt{template}), extendidas con métodos explícitos para \texttt{search}, \texttt{insert} y \texttt{delete}.
+\end{itemize}
+
+\section{Resultados Experimentales}
+% 4. Resultados Experimentales: Inicialización, hardware, gráficos y tablas.
+
+\subsection{Entorno de Pruebas y Hardware}
+Los experimentos fueron ejecutados bajo un entorno controlado con las siguientes características técnicas:
+\begin{itemize}
+    \item \textbf{Procesador:} [Ej: AMD Ryzen 7 5800X / Intel Core i7-11800H @ 3.2 GHz]
+    \item \textbf{Memoria RAM:} [Ej: 16 GB DDR4 3200 MHz]
+    \item \textbf{Almacenamiento:} [Ej: SSD NVMe M.2 512 GB]
+    \item \textbf{Compilador y SO:} GCC 11.2, C++17, [Ubuntu 22.04 LTS / Windows 11]
+\end{itemize}
+
+\subsection{Diseño Experimental}
+\begin{enumerate}
+    \item \textbf{Poblado del árbol:} Se insertaron $n$ claves en cada estructura con $n \in \{10^3, 10^4, 10^5, 10^6\}$.
+    \item \textbf{Distribución de Consultas:} Se evaluaron consultas siguiendo distribuciones de probabilidad discretas no uniformes (ej: Geométrica / Poisson) para simular el sesgo de acceso exigido en la evaluación del Splay Tree.
+    \item \textbf{Medición de Tiempos:} Uso de la librería \texttt{<chrono>} de C++ para medir la ejecución promedio por consulta.
+\end{enumerate}
+
+\subsection{Resultados Obtenidos}
+
+% Ejemplo de inclusión de gráficos (Descomentar al tener las imágenes)
+%\begin{figure}[h!]
+%    \centering
+%    \includegraphics[width=0.75\textwidth]{grafico_tiempos.png}
+%    \caption{Tiempo promedio de búsqueda ($ms$) vs. Cantidad de elementos ($n$).}
+%    \label{fig:tiempos_busqueda}
+%\end{figure}
+
+\begin{table}[h!]
+    \centering
+    \caption{Tiempo promedio de búsqueda ($\mu s$) según la frecuencia de acceso.}
+    \label{tab:resultados_busqueda}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Estructura} & \textbf{Claves Frecuentes} & \textbf{Claves Poco Frecuentes} & \textbf{Consultas Repetidas} \\
+        \midrule
+        \textbf{Árbol AVL} & -- & -- & -- \\
+        \textbf{Rojo-Negro} & -- & -- & -- \\
+        \textbf{Árbol Splay} & -- & -- & -- \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Conclusiones}
+% 5. Conclusiones: Validadas por los resultados experimentales, comparaciones cuantitativas, toma de decisiones.
+\begin{itemize}
+    \item \textbf{Comparativa Cuantitativa:} [Describir los resultados. Ej: \emph{En escenarios con sesgo de acceso, el Árbol Splay resultó ser $X$ veces más rápido en consultas repetidas que el Árbol AVL y Rojo-Negro}].
+    \item \textbf{Toma de Decisiones y Uso Recomendado:}
+    \begin{itemize}
+        \item Usar \textbf{Árbol Splay} cuando el patrón de acceso tenga alta localidad de referencia o consultas muy sesgadas.
+        \item Usar \textbf{Árbol Rojo-Negro / AVL} cuando se requieran garantías de respuesta estrictas e independientes del orden o frecuencia de las consultas.
+    \end{itemize}
+\end{itemize}
+
+\section{Referencias}
+\begin{enumerate}
+    \item GeeksforGeeks. \emph{Splay Tree Practice \& Implementation}. \url{https://www.geeksforgeeks.org/}
+    \item Documentación de la C++ Standard Template Library (STL) para \texttt{std::set}.
+    \item Cormen, T. H., Leiserson, C. E., Rivest, R. L., \& Stein, C. (2009). \emph{Introduction to Algorithms} (3rd ed.). MIT Press.
+\end{enumerate}
+
+\end{document}
