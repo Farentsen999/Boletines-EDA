@@ -1,4 +1,7 @@
-#include <iostream>
+#ifndef SPLAY_TREE_HPP
+#define SPLAY_TREE_HPP
+
+#include <cstddef>
 
 // Adaptación de la implementación de GeeksforGeeks a una clase SplayTree genérica (Template).
 template <typename T> 
@@ -99,6 +102,20 @@ private:
             // Segunda rotación a la izquierda para elevar el nodo objetivo a la raíz del subárbol
             return (curr->right == nullptr) ? curr : leftRotate(curr);
         }
+    }
+    
+    /**
+     * Función auxiliar para determinar la profundidad de un nodo.
+     */
+    int depth(T key) const {
+        int d = 0;
+        SplayNode<T>* curr = root;
+        while (curr != nullptr) {
+            if (curr->key == key) return d;
+            curr = (key < curr->key) ? curr->left : curr->right;
+            d++;
+        }
+        return -1; // No encontrado
     }
 
     /**
@@ -212,5 +229,7 @@ public:
     }
 
 };
+
+#endif
 
 

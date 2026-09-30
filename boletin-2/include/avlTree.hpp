@@ -1,4 +1,10 @@
-// Adaptación de la implementación de GeeksforGeeks a una clase SplayTree genérica (Template).
+#ifndef AVL_TREE_HPP
+#define AVL_TREE_HPP
+
+#include <algorithm> 
+#include <cstddef>   
+
+// Adaptación de la implementación de GeeksforGeeks a una clase AVL Tree genérica (Template).
 
 // Clase plantilla que representa un nodo dentro del árbol AVL
 template <typename T> 
@@ -85,19 +91,19 @@ private:
     }
 
     // Función recursiva auxiliar para insertar una nueva clave en el subárbol con raíz en 'node'
-    AVLNode<T>* insert(AVLNode<T>* node, T key)
-    {
-        // 1. Inserción normal de un Árbol de Búsqueda Binaria (BST)
-        if (node == nullptr)
+    AVLNode<T>* insert(AVLNode<T>* node, T key, bool& inserted) {
+        if (node == nullptr) {
+            inserted = true;
             return new AVLNode<T>(key);
-
+        }
         if (key < node->key)
-            node->left = insert(node->left, key);
+            node->left = insert(node->left, key, inserted);
         else if (key > node->key)
-            node->right = insert(node->right, key);
-        else
-            return node; // No se permiten claves duplicadas
-
+            node->right = insert(node->right, key, inserted);
+        else {
+            inserted = false; // Clave duplicada
+            return node;
+        }
         // 2. Actualizar la altura de este nodo ancestro
         node->height = 1 + std::max(height(node->left), height(node->right));
 
@@ -146,19 +152,17 @@ private:
     }
 
     // Función auxiliar para eliminar una clave en el subárbol con raíz en 'root'
-    AVLNode<T>* deleteNode(AVLNode<T>* root, T key)
-    {
-        // 1. Eliminación estándar de un Árbol de Búsqueda Binaria (BST)
-        if (root == nullptr)
-            return root;
-
+    AVLNode<T>* deleteNode(AVLNode<T>* root, T key, bool& deleted) {
+        if (root == nullptr) {
+            deleted = false;
+            return nullptr;
+        }
         if (key < root->key)
-            root->left = deleteNode(root->left, key);
+            root->left = deleteNode(root->left, key, deleted);
         else if (key > root->key)
-            root->right = deleteNode(root->right, key);
+            root->right = deleteNode(root->right, key, deleted);
         else {
-            // El nodo a eliminar ha sido encontrado
-
+            deleted = true; // Encontrado
             // Caso 1 y 2: Nodo con un solo hijo o sin hijos
             if ((root->left == nullptr) || (root->right == nullptr)) {
                 AVLNode<T>* temp = root->left ? root->left : root->right;
@@ -257,16 +261,18 @@ public:
      * Inserción de una clave.
      */
     void insert(T key) { 
-        root = insert(root, key); 
-        node_count++;
+        bool inserted = false;
+        root = insert(root, key, inserted); 
+        if (inserted) node_count++;
     }
 
     /**
      * Eliminación de una clave.
      */
     void remove(T key) { 
-        root = deleteNode(root, key); 
-        node_count--;
+        bool deleted = false;
+        root = deleteNode(root, key, deleted); 
+        if (deleted) node_count--;
     }
 
     /**
@@ -288,3 +294,5 @@ public:
         return root == nullptr;
     }
 };
+
+#endif

@@ -1,6 +1,10 @@
-#include <iostream>
+#ifndef RED_BLACK_TREE_HPP
+#define RED_BLACK_TREE_HPP
+
 #include <set>
-#include <chrono>
+#include <cstddef>
+
+
 
 template <typename T> 
 class RedBlackTree {
@@ -49,3 +53,5 @@ public:
         return rbTree.empty();
     }
 };
+
+#endif

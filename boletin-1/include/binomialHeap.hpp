@@ -298,9 +298,9 @@ class binomial_heap
         }
 
         /** Combina 2 Binomial Heaps */
-        void meld(const binomial_heap &h)
-        {
+        void meld(binomial_heap&& h) {
             roots = adjust(unionBionomialHeap(roots, h.roots));
+            h.roots.clear(); // Evita que el destructor de 'h' libere los nodos fusionados
         }
 
          /** Indica si el heap esta o no vacio */
