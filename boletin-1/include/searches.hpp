@@ -85,15 +85,10 @@ inline int wrapper_stl_binaria(const std::vector<int>& arr, int target) {
 }
 
 /**
- * Wrapper de Búsqueda Binaria / Galopante mediante std::lower_bound
- * Retorna el índice exacto si lo encuentra.
+ * Wrapper / Sobrecarga de Búsqueda Galopante para toda la estructura.
  */
-inline int wrapper_stl_lower_bound(const std::vector<int>& arr, int target) {
-    auto it = std::lower_bound(arr.begin(), arr.end(), target);
-    if (it != arr.end() && *it == target) {
-        return static_cast<int>(std::distance(arr.begin(), it));
-    }
-    return -1;
+inline int wrapper_stl_galopante(const std::vector<int>& arr, int target) {
+    if (arr.empty()) return -1;
+    return busqueda_galopante(arr, target, 0, static_cast<int>(arr.size()) - 1);
 }
-
 #endif

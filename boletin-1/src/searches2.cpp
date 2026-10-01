@@ -9,7 +9,6 @@
 
 #include "../include/searches.hpp"
 #include "../include/uhr_utils.hpp"
-#include "../include/generador.hpp"
 
 // Tipo de puntero a función
 using SearchFn = int(*)(const std::vector<int>&, int);
@@ -42,7 +41,7 @@ SearchFn seleccionar_algoritmo(const std::string& algo) {
     };
     if (algo == "stl_find") return wrapper_stl_secuencial;
     if (algo == "stl_bin") return wrapper_stl_binaria;
-    if (algo == "stl_lower") return wrapper_stl_lower_bound;
+    if (algo == "stl_lower") return wrapper_stl_galopante;
 
     std::cerr << "Error: Algoritmo desconocido '" << algo << "'." << std::endl;
     std::exit(EXIT_FAILURE);
@@ -111,43 +110,45 @@ int main(int argc, char *argv[]) {
     std::int64_t total_runs = runs * posiciones.size();
     std::int64_t executed_runs = 0;
 
+    const size_t K_SEARCHES = 1000; 
     long long global_checksum = 0;
 
-    std::cout << "\033[0;36mEjecutando Experimento 2 (Medición Unitaria) [N = " << n 
-              << ", Algoritmo: " << algo << ", Puntos = " << posiciones.size() << "]...\033[0m" << std::endl;
+    std::cout << "\033[0;36mEjecutando Experimento 2 (N = " << n 
+              << ", Algoritmo: " << algo << ", Puntos = " << posiciones.size() << ")...\033[0m" << std::endl;
 
     for (size_t target_idx : posiciones) {
         int valor_objetivo = dataset[target_idx];
 
-        // A. WARM-UP (Calentamiento de caché previo al reloj)
+        // A. WARM-UP
         {
             for (int w = 0; w < 10; ++w) {
                 global_checksum += search_func(dataset, valor_objetivo);
             }
         }
 
-        // B. MEDICIÓN UNITARIA
+        // B. MEDICIÓN
         mean_time = 0;
         for (std::int64_t i = 0; i < runs; i++) {
             display_progress(++executed_runs, total_runs);
 
             auto begin_time = std::chrono::high_resolution_clock::now();
             
-            // Medición unitaria directa sobre el valor objetivo en la posición dada
-            int res = search_func(dataset, valor_objetivo);
+            long long run_checksum = 0;
+            for (size_t k = 0; k < K_SEARCHES; ++k) {
+                run_checksum += search_func(dataset, valor_objetivo);
+            }
             
             auto end_time = std::chrono::high_resolution_clock::now();
 
-            global_checksum += res;
+            global_checksum += run_checksum;
 
             std::chrono::duration<double, std::nano> elapsed_time = end_time - begin_time;
             
-            // Registra la duración exacta en nanosegundos
-            times[i] = elapsed_time.count();
+            times[i] = elapsed_time.count() / static_cast<double>(K_SEARCHES);
             mean_time += times[i];
         }
 
-        // C. PROCESAMIENTO ESTADÍSTICO
+        // C. ESTADÍSTICAS
         mean_time /= runs;
         time_stdev = 0;
         for (std::int64_t i = 0; i < runs; i++) {

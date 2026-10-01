@@ -48,7 +48,7 @@ SearchFn seleccionar_algoritmo(const std::string& algo) {
     };
     if (algo == "stl_find") return wrapper_stl_secuencial;
     if (algo == "stl_bin") return wrapper_stl_binaria;
-    if (algo == "stl_lower") return wrapper_stl_lower_bound;
+    if (algo == "stl_lower") return wrapper_stl_galopante;
 
     std::cerr << "Error: Algoritmo desconocido '" << algo << "'." << std::endl;
     std::exit(EXIT_FAILURE);
